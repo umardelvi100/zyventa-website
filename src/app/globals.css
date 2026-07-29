@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+/* Dark mode is opt-in via an explicit `.dark` class, which this app never
+   applies — this keeps the storefront on its bright, white-based light
+   theme regardless of the visitor's system color-scheme preference. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #1c1524;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
