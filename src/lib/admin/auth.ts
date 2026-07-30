@@ -12,7 +12,7 @@ export const ADMIN_TOKEN_COOKIE = "zyventa_admin_token";
 const ADMIN_TOKEN_VALUE = "zyventa-admin-v1-authenticated";
 
 const ADMIN_CREDENTIALS = {
-  email: "umardelvi@gmail.com",
+  email: "umardelvi100@gmail.com",
   password: "123456",
 } as const;
 
