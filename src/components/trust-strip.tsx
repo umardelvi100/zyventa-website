@@ -15,8 +15,8 @@ export function TrustStrip() {
   ];
 
   return (
-    <section className="mx-auto max-w-7xl px-4 pb-4 pt-4 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <section className="mx-auto max-w-7xl px-4 pb-6 pt-6 sm:px-6 lg:px-8">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {items.map(({ icon: Icon, title, desc, gradient }, i) => (
           <motion.div
             key={title}
@@ -24,14 +24,14 @@ export function TrustStrip() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.4, delay: i * 0.05 }}
-            className="flex flex-col items-start gap-3 rounded-2xl border border-black/5 bg-white p-5 dark:border-white/10 dark:bg-neutral-900"
+            className="flex flex-col items-start gap-3 rounded-2xl border border-black/[0.06] bg-white p-4 shadow-sm sm:p-5 dark:border-white/10 dark:bg-neutral-900"
           >
-            <span className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white`}>
+            <span className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-sm`}>
               <Icon className="h-5 w-5" />
             </span>
             <div>
-              <p className="font-bold">{title}</p>
-              <p className="mt-0.5 text-sm text-neutral-500">{desc}</p>
+              <p className="font-bold leading-snug">{title}</p>
+              <p className="mt-0.5 text-xs leading-relaxed text-neutral-500 sm:text-sm">{desc}</p>
             </div>
           </motion.div>
         ))}

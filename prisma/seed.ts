@@ -292,6 +292,42 @@ async function main() {
       image: img("mist-toner"),
       seller: "HomeHaven",
     },
+    {
+      slug: "glow-vitamin-c-serum",
+      name: "Glow Vitamin C Brightening Serum",
+      overview: "High-potency 20% vitamin C serum for radiance — 30ml.",
+      description:
+        "A concentrated 20% L-ascorbic acid serum designed to brighten, protect, and even skin tone. Formulated with niacinamide and ferulic acid for enhanced stability and efficacy. 30ml dropper bottle. Apply 3–5 drops to cleansed face morning and evening.",
+      price: 15500,
+      category: "Cosmetics",
+      subcategory: "Serums",
+      image: img("vitamin-c-serum"),
+      seller: "HomeHaven",
+    },
+    {
+      slug: "rose-gold-lip-elixir",
+      name: "Rose Gold Lip Elixir",
+      overview: "Nourishing lip treatment with Bulgarian rose and vitamin E.",
+      description:
+        "A luxurious lip oil infused with Bulgarian rose extract, vitamin E tocopherol, and jojoba oil for deep hydration and a glossy finish. Non-sticky formula with a soft doe-foot applicator. 10ml.",
+      price: 6800,
+      category: "Cosmetics",
+      subcategory: "Lip Care",
+      image: img("rose-lip-elixir"),
+      seller: "HomeHaven",
+    },
+    {
+      slug: "argan-shine-hair-oil",
+      name: "Argan Shine Hair Oil",
+      overview: "Lightweight pure argan oil for frizz control and shine.",
+      description:
+        "100% pure argan oil enriched with keratin proteins and silk amino acids to tame frizz, add mirror shine, and protect hair from heat up to 230°C. Apply 2–3 drops to damp or dry hair. 100ml pump bottle.",
+      price: 9800,
+      category: "Cosmetics",
+      subcategory: "Hair Care",
+      image: img("argan-hair-oil"),
+      seller: "HomeHaven",
+    },
   ];
 
   const productIds: Record<string, string> = {};
