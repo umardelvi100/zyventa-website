@@ -1,14 +1,25 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { adminLoginAction } from "@/app/admin/actions";
 
 export default function AdminLoginPage() {
+  const router = useRouter();
   const [state, formAction, pending] = useActionState(adminLoginAction, null);
   const [showPw, setShowPw] = useState(false);
+
+  useEffect(() => {
+    if (state && "success" in state && state.success) {
+      router.push("/admin/dashboard");
+    }
+  }, [state, router]);
+
+  const errorMsg =
+    state && "error" in state ? state.error : null;
 
   return (
     <div className="flex flex-1 items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
@@ -35,9 +46,9 @@ export default function AdminLoginPage() {
 
           <form action={formAction} className="flex flex-col gap-4">
             {/* Error banner */}
-            {state?.error && (
+            {errorMsg && (
               <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-400">
-                {state.error}
+                {errorMsg}
               </div>
             )}
 

@@ -11,9 +11,9 @@ import {
 // ─── Login ────────────────────────────────────────────────────────────────────
 
 export async function adminLoginAction(
-  _prevState: { error: string } | null,
+  _prevState: { error: string } | { success: true } | null,
   formData: FormData,
-): Promise<{ error: string } | null> {
+): Promise<{ error: string } | { success: true } | null> {
   const email = (formData.get("email") as string | null) ?? "";
   const password = (formData.get("password") as string | null) ?? "";
 
@@ -28,11 +28,12 @@ export async function adminLoginAction(
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 60 * 60 * 24, // 24 h
-    path: "/admin",
+    maxAge: 60 * 60 * 24,
+    path: "/",
   });
 
-  redirect("/admin/dashboard");
+  // Return success — client will navigate to dashboard
+  return { success: true };
 }
 
 // ─── Logout ───────────────────────────────────────────────────────────────────
