@@ -1,25 +1,21 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
-import { BecomeSellerForm } from "@/components/seller/become-seller-form";
+import { SellerRegistrationWizard } from "@/components/seller/registration/wizard";
 
-export default async function SellPage() {
-  const session = await auth();
-  if (!session?.user) redirect("/login?callbackUrl=/sell");
-
-  const existing = await prisma.seller.findUnique({ where: { userId: session.user.id } });
-  if (existing) redirect("/seller/dashboard");
-
+export default function SellPage() {
   return (
-    <div className="mx-auto max-w-xl px-4 py-16 sm:px-6">
-      <h1 className="text-3xl font-black tracking-tight">Become a seller</h1>
-      <p className="mt-2 text-neutral-500">
-        Open your own storefront on Zyventa — list products, run promotions, and manage your own
-        orders and returns.
-      </p>
-      <div className="mt-10">
-        <BecomeSellerForm />
+    <div className="min-h-screen bg-slate-50 py-12 px-4">
+      <div className="mx-auto max-w-2xl mb-10 text-center">
+        <h1 className="text-3xl font-extrabold text-slate-900">
+          Become a{" "}
+          <span className="bg-gradient-to-r from-indigo-600 to-orange-500 bg-clip-text text-transparent">
+            Zyventa Seller
+          </span>
+        </h1>
+        <p className="mt-3 text-slate-500 text-base">
+          Join thousands of sellers on the UAE's fastest-growing healthcare marketplace.
+          Complete the form below to apply.
+        </p>
       </div>
+      <SellerRegistrationWizard />
     </div>
   );
 }
