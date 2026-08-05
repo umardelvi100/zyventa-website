@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Mail } from "lucide-react";
+import { MapPin, Mail, ShieldCheck, BadgeCheck, Lock, Truck } from "lucide-react";
 
 function IconInstagram() {
   return (
@@ -36,9 +36,9 @@ function IconYoutube() {
 
 const SOCIAL = [
   { Icon: IconInstagram, label: "Instagram", href: "#" },
-  { Icon: IconX, label: "X / Twitter", href: "#" },
-  { Icon: IconFacebook, label: "Facebook", href: "#" },
-  { Icon: IconYoutube, label: "YouTube", href: "#" },
+  { Icon: IconX,         label: "X / Twitter", href: "#" },
+  { Icon: IconFacebook,  label: "Facebook", href: "#" },
+  { Icon: IconYoutube,   label: "YouTube", href: "#" },
 ];
 
 const SHOP_LINKS = [
@@ -70,6 +70,13 @@ const COMPANY_LINKS = [
   { label: "Cookie Policy", href: "#" },
 ];
 
+const TRUST_BADGES = [
+  { icon: BadgeCheck, label: "Genuine Products" },
+  { icon: ShieldCheck, label: "Verified Sellers" },
+  { icon: Lock, label: "Secure Payments" },
+  { icon: Truck, label: "Fast UAE Delivery" },
+];
+
 function FooterHeading({ children }: { children: React.ReactNode }) {
   return (
     <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-neutral-400">
@@ -83,7 +90,7 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
     <li>
       <Link
         href={href}
-        className="text-sm text-neutral-600 transition-colors duration-150 hover:text-indigo-600 dark:text-neutral-400 dark:hover:text-indigo-400"
+        className="text-sm text-neutral-600 transition-colors duration-150 hover:text-indigo-600"
       >
         {children}
       </Link>
@@ -95,11 +102,24 @@ export async function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-black/[0.06] bg-neutral-50/80 dark:border-white/10 dark:bg-neutral-950">
+    <footer className="border-t border-black/[0.06] bg-neutral-50/80">
+      {/* Trust badges strip */}
+      <div className="border-b border-black/[0.05] bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
+            {TRUST_BADGES.map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-2 text-xs font-semibold text-neutral-500">
+                <Icon className="h-4 w-4 text-indigo-500 shrink-0" />
+                {label}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Main grid */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-x-8 gap-y-10 py-14 md:grid-cols-3 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr]">
-
           {/* Brand column */}
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
             <div className="relative mb-4 h-8 w-[120px]">
@@ -111,7 +131,7 @@ export async function Footer() {
                 className="object-contain object-left"
               />
             </div>
-            <p className="mb-5 max-w-[260px] text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+            <p className="mb-5 max-w-[260px] text-sm leading-relaxed text-neutral-500">
               Your trusted health &amp; beauty marketplace across the UAE. Verified sellers, authentic products, fast delivery.
             </p>
             <div className="flex flex-col gap-2.5 text-sm text-neutral-500">
@@ -134,7 +154,7 @@ export async function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 text-neutral-500 transition-all duration-150 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-600 dark:border-white/15 dark:hover:border-indigo-400 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-400"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 text-neutral-500 transition-all duration-150 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-600"
                 >
                   <Icon />
                 </a>
@@ -184,7 +204,7 @@ export async function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-black/[0.06] py-6 text-xs text-neutral-500 sm:flex-row dark:border-white/10">
+        <div className="flex flex-col items-center justify-between gap-3 border-t border-black/[0.06] py-6 text-xs text-neutral-500 sm:flex-row">
           <p>© {year} Zyventa. All rights reserved.</p>
           <p className="text-center text-neutral-400">
             Demo store — payments are simulated, no real charges are made.

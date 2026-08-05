@@ -7,6 +7,12 @@ import { Hero } from "@/components/hero";
 import { TrustStrip } from "@/components/trust-strip";
 import { SellerCtaBanner } from "@/components/seller-cta-banner";
 import { ProductCard } from "@/components/product-card";
+import { FeaturedCollections } from "@/components/home/featured-collections";
+import { WhyZyventa } from "@/components/home/why-zyventa";
+import { CustomerReviews } from "@/components/home/customer-reviews";
+import { ArticlesSection } from "@/components/home/articles-section";
+import { NewsletterSection } from "@/components/home/newsletter-section";
+import { PersonalizationShelf } from "@/components/home/personalization-shelf";
 import { computeRating } from "@/lib/ratings";
 import { getWishlistedIds } from "@/lib/wishlist";
 import { getCategoryPalette } from "@/lib/category-colors";
@@ -68,6 +74,16 @@ export default async function Home() {
     };
   });
 
+  // Best sellers: top by rating × review count
+  const bestSellers = [...withMeta]
+    .sort((a, b) => b.avgRating * b.reviewCount - a.avgRating * a.reviewCount)
+    .slice(0, 4);
+
+  // New arrivals: last 4 by createdAt
+  const newArrivals = [...withMeta]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 4);
+
   const leftProducts = withMeta
     .filter((p) => p.category === "Medicines")
     .slice(0, 3)
@@ -90,19 +106,21 @@ export default async function Home() {
 
   return (
     <>
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <Hero
         leftProducts={leftProducts.length >= 2 ? leftProducts : fallback}
         rightProducts={rightProducts.length >= 2 ? rightProducts : fallback}
       />
 
+      {/* ── Trust Strip ───────────────────────────────────────────────────── */}
       <TrustStrip />
 
-      {/* Marketplace stats bar */}
+      {/* ── Marketplace stats ─────────────────────────────────────────────── */}
       {allProducts.length > 0 && (
-        <section className="border-b border-t border-black/[0.05] bg-white py-5 dark:border-white/10 dark:bg-neutral-950">
+        <section className="border-b border-t border-black/[0.05] bg-white py-5">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-8 px-4 sm:gap-12 sm:px-6 lg:px-8">
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
                 <ShoppingBag className="h-4 w-4" />
               </span>
               <div className="leading-none">
@@ -111,7 +129,7 @@ export default async function Home() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
                 <Users className="h-4 w-4" />
               </span>
               <div className="leading-none">
@@ -120,7 +138,7 @@ export default async function Home() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
                 <Star className="h-4 w-4" />
               </span>
               <div className="leading-none">
@@ -129,7 +147,7 @@ export default async function Home() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
                 <TrendingUp className="h-4 w-4" />
               </span>
               <div className="leading-none">
@@ -141,8 +159,11 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Category tiles */}
-      <section className="mx-auto max-w-7xl px-4 pb-4 pt-14 sm:px-6 lg:px-8">
+      {/* ── Featured Collections (editorial) ──────────────────────────────── */}
+      <FeaturedCollections />
+
+      {/* ── Shop by Category ──────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 pb-4 pt-4 sm:px-6 lg:px-8">
         <div className="mb-7 flex items-end justify-between">
           <div>
             <h2 className="text-2xl font-black tracking-tight sm:text-3xl">{dict.home.shopByCategory}</h2>
@@ -150,7 +171,7 @@ export default async function Home() {
           </div>
           <Link
             href="/products"
-            className="flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+            className="flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:underline"
           >
             {dict.common.viewAll} <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
           </Link>
@@ -164,7 +185,7 @@ export default async function Home() {
               <Link
                 key={category}
                 href={`/products?category=${encodeURIComponent(category)}`}
-                className="group flex items-center justify-between overflow-hidden rounded-2xl border border-black/[0.06] bg-white p-5 shadow-sm transition-all duration-200 hover:border-black/[0.1] hover:shadow-lg hover:shadow-black/[0.06] dark:border-white/10 dark:bg-neutral-900 dark:hover:border-white/15"
+                className="group flex items-center justify-between overflow-hidden rounded-2xl border border-black/[0.06] bg-white p-5 shadow-sm transition-all duration-200 hover:border-black/[0.1] hover:shadow-lg hover:shadow-black/[0.06]"
               >
                 <div className="flex items-start gap-4 min-w-0">
                   <span
@@ -175,7 +196,7 @@ export default async function Home() {
                   <div className="min-w-0">
                     <p className="font-bold tracking-tight">{category}</p>
                     <p className="mt-0.5 text-xs leading-relaxed text-neutral-500">{description}</p>
-                    <p className="mt-2.5 flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                    <p className="mt-2.5 flex items-center gap-1 text-xs font-semibold text-indigo-600">
                       {count} {dict.shop.products}{" "}
                       <ArrowRight className="h-3 w-3 transition-transform duration-150 group-hover:translate-x-0.5 rtl:rotate-180" />
                     </p>
@@ -198,7 +219,21 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Category product rows */}
+      {/* ── Best Sellers ──────────────────────────────────────────────────── */}
+      {bestSellers.length > 0 && (
+        <PersonalizationShelf
+          title="Best Sellers"
+          subtitle="Our most loved products, trusted by thousands"
+          tag="Top Rated"
+          products={bestSellers}
+          viewAllHref="/products?sort=rating"
+        />
+      )}
+
+      {/* ── Why Zyventa ───────────────────────────────────────────────────── */}
+      <WhyZyventa />
+
+      {/* ── Category product rows ─────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 pb-16 pt-14 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-16">
           {categoryRows.map(({ category, products }) => {
@@ -206,7 +241,7 @@ export default async function Home() {
             const palette = getCategoryPalette(category);
             return (
               <div key={category}>
-                <div className="mb-7 flex items-end justify-between border-b border-black/[0.05] pb-4 dark:border-white/10">
+                <div className="mb-7 flex items-end justify-between border-b border-black/[0.05] pb-4">
                   <div className="flex items-center gap-3">
                     <span className={`h-5 w-1.5 rounded-full bg-gradient-to-b ${palette.gradient}`} />
                     <div>
@@ -216,7 +251,7 @@ export default async function Home() {
                   </div>
                   <Link
                     href={`/products?category=${encodeURIComponent(category)}`}
-                    className="flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                    className="flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:underline"
                   >
                     {dict.common.viewAll} <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
                   </Link>
@@ -232,6 +267,27 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ── New Arrivals ──────────────────────────────────────────────────── */}
+      {newArrivals.length > 0 && (
+        <PersonalizationShelf
+          title="New Arrivals"
+          subtitle="The latest additions to our marketplace"
+          tag="Just In"
+          products={newArrivals}
+          viewAllHref="/products?sort=newest"
+        />
+      )}
+
+      {/* ── Customer Reviews ──────────────────────────────────────────────── */}
+      <CustomerReviews />
+
+      {/* ── Health Journal / Articles ─────────────────────────────────────── */}
+      <ArticlesSection />
+
+      {/* ── Newsletter ────────────────────────────────────────────────────── */}
+      <NewsletterSection />
+
+      {/* ── Seller CTA ────────────────────────────────────────────────────── */}
       <SellerCtaBanner />
     </>
   );

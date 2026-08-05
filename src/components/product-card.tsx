@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Star, Banknote } from "lucide-react";
+import { Star, Banknote, Truck } from "lucide-react";
 import { formatPrice } from "@/lib/format";
 import { getEffectivePrice, isPromotionActive } from "@/lib/pricing";
 import { getCategoryPalette } from "@/lib/category-colors";
@@ -46,12 +46,12 @@ export function ProductCard({ product, index = 0 }: { product: ProductCardData; 
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.4, delay: Math.min(index, 8) * 0.04 }}
       whileHover={{ y: -4 }}
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-sm transition-all duration-300 hover:border-black/[0.1] hover:shadow-xl hover:shadow-neutral-900/8 dark:border-white/10 dark:bg-neutral-900"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-sm transition-all duration-300 hover:border-black/[0.1] hover:shadow-xl hover:shadow-neutral-900/8"
     >
       {/* Image area */}
       <Link
         href={`/products/${product.slug}`}
-        className="relative block aspect-square overflow-hidden bg-neutral-100 dark:bg-neutral-800"
+        className="relative block aspect-square overflow-hidden bg-neutral-50"
       >
         <motion.div
           whileHover={{ scale: 1.05 }}
@@ -67,6 +67,7 @@ export function ProductCard({ product, index = 0 }: { product: ProductCardData; 
           />
         </motion.div>
 
+        {/* Out of stock overlay */}
         {outOfStock && (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="rounded-full bg-neutral-900/75 px-3 py-1.5 text-xs font-semibold tracking-wide text-white backdrop-blur-sm">
@@ -89,8 +90,8 @@ export function ProductCard({ product, index = 0 }: { product: ProductCardData; 
           </span>
         )}
 
-        {/* Wishlist */}
-        <div className="absolute bottom-2.5 end-2.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        {/* Wishlist — always visible on mobile, hover on desktop */}
+        <div className="absolute bottom-2.5 end-2.5 sm:opacity-0 sm:transition-opacity sm:duration-200 sm:group-hover:opacity-100">
           <WishlistButton productId={product.id} initialWishlisted={product.isWishlisted} />
         </div>
       </Link>
@@ -98,13 +99,13 @@ export function ProductCard({ product, index = 0 }: { product: ProductCardData; 
       {/* Card body */}
       <div className="flex flex-1 flex-col gap-1.5 p-4">
         <Link href={`/products/${product.slug}`} className="block">
-          <h3 className="line-clamp-1 font-semibold leading-snug tracking-tight transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+          <h3 className="line-clamp-1 font-semibold leading-snug tracking-tight transition-colors group-hover:text-indigo-600">
             {product.name}
           </h3>
         </Link>
 
         {product.overview && (
-          <p className="line-clamp-2 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
+          <p className="line-clamp-2 text-xs leading-relaxed text-neutral-500">
             {product.overview}
           </p>
         )}
@@ -114,7 +115,7 @@ export function ProductCard({ product, index = 0 }: { product: ProductCardData; 
           {product.reviewCount > 0 ? (
             <>
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-              <span className="font-medium text-neutral-700 dark:text-neutral-300">
+              <span className="font-semibold text-neutral-700">
                 {product.avgRating.toFixed(1)}
               </span>
               <span className="text-neutral-400">({product.reviewCount})</span>
@@ -124,6 +125,14 @@ export function ProductCard({ product, index = 0 }: { product: ProductCardData; 
           )}
         </div>
 
+        {/* Delivery estimate */}
+        {!outOfStock && (
+          <div className="flex items-center gap-1 text-[11px] text-neutral-400">
+            <Truck className="h-3 w-3" />
+            <span>Delivery by Tomorrow</span>
+          </div>
+        )}
+
         {/* Price row */}
         <div className="mt-auto flex items-end justify-between gap-2 pt-3">
           <div className="flex flex-col gap-0.5">
@@ -131,14 +140,16 @@ export function ProductCard({ product, index = 0 }: { product: ProductCardData; 
             {promoActive && (
               <span className="text-xs text-neutral-400 line-through">{formatPrice(originalPrice)}</span>
             )}
-            {lowStock && (
-              <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">Only a few left</span>
-            )}
-            {product.codAvailable && (
-              <span className="flex items-center gap-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-                <Banknote className="h-3 w-3" /> COD
-              </span>
-            )}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {lowStock && (
+                <span className="text-[11px] font-semibold text-amber-600">Only a few left</span>
+              )}
+              {product.codAvailable && (
+                <span className="flex items-center gap-0.5 text-[11px] font-medium text-emerald-600">
+                  <Banknote className="h-3 w-3" /> COD
+                </span>
+              )}
+            </div>
           </div>
           <AddToCartButton
             disabled={outOfStock}
