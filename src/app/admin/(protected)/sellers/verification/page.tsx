@@ -1,35 +1,71 @@
-import { MOCK_SELLERS } from "@/lib/admin/mock-data";
+import { prisma } from "@/lib/prisma";
 import { verifySellerAction, rejectSellerAction } from "@/app/admin/actions";
 import { VerificationBadge } from "@/components/admin/status-badge";
+import type { VerificationStatus } from "@/lib/admin/types";
 import Link from "next/link";
 
-function daysSince(dateStr: string) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  return Math.floor(diff / (1000 * 60 * 60 * 24));
+const LOGO_COLORS = [
+  "bg-indigo-600", "bg-emerald-600", "bg-rose-500", "bg-teal-600",
+  "bg-violet-500", "bg-orange-500", "bg-pink-500", "bg-sky-600",
+];
+
+function getLogoColor(id: string) {
+  const idx = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) % LOGO_COLORS.length;
+  return LOGO_COLORS[idx];
 }
 
-export default function SellerVerificationPage() {
-  const pending = MOCK_SELLERS.filter((s) => s.verificationStatus === "pending");
-  const recent = MOCK_SELLERS.filter(
-    (s) => s.verificationStatus === "verified" || s.verificationStatus === "rejected",
-  ).slice(0, 4);
+function getInitials(name: string) {
+  return name.split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("") || "??";
+}
+
+function mapStatus(s: string): VerificationStatus {
+  if (s === "approved") return "verified";
+  if (s === "pending" || s === "rejected" || s === "suspended") return s as VerificationStatus;
+  return "pending";
+}
+
+function daysSince(date: Date) {
+  return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+export default async function SellerVerificationPage() {
+  const dbSellers = await prisma.seller.findMany({
+    include: { user: { select: { name: true, email: true } } },
+    orderBy: { submittedAt: "asc" },
+  });
+
+  const mapped = dbSellers.map((s) => ({
+    id: s.id,
+    companyName: s.storeName,
+    sellerName: s.user.name,
+    email: s.user.email,
+    logoInitials: getInitials(s.storeName),
+    logoColor: getLogoColor(s.id),
+    submittedAt: s.submittedAt ?? s.createdAt,
+    verificationStatus: mapStatus(s.verificationStatus),
+    legalName: s.legalName ?? "—",
+    businessRegNumber: s.businessRegNumber ?? "—",
+  }));
+
+  const pending = mapped.filter((s) => s.verificationStatus === "pending");
+  const recent = mapped
+    .filter((s) => s.verificationStatus === "verified" || s.verificationStatus === "rejected")
+    .slice(0, 4);
+
+  const counts = {
+    pending: pending.length,
+    verified: mapped.filter((s) => s.verificationStatus === "verified").length,
+    rejected: mapped.filter((s) => s.verificationStatus === "rejected").length,
+  };
 
   return (
     <div className="flex flex-col gap-6">
       {/* Summary bar */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Awaiting Review", value: pending.length, cls: "text-amber-600 dark:text-amber-400" },
-          {
-            label: "Verified (total)",
-            value: MOCK_SELLERS.filter((s) => s.verificationStatus === "verified").length,
-            cls: "text-emerald-600 dark:text-emerald-400",
-          },
-          {
-            label: "Rejected (total)",
-            value: MOCK_SELLERS.filter((s) => s.verificationStatus === "rejected").length,
-            cls: "text-red-600 dark:text-red-400",
-          },
+          { label: "Awaiting Review", value: counts.pending, cls: "text-amber-600 dark:text-amber-400" },
+          { label: "Verified (total)", value: counts.verified, cls: "text-emerald-600 dark:text-emerald-400" },
+          { label: "Rejected (total)", value: counts.rejected, cls: "text-red-600 dark:text-red-400" },
         ].map((stat) => (
           <div
             key={stat.label}
@@ -57,7 +93,7 @@ export default function SellerVerificationPage() {
         ) : (
           <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
             {pending.map((s) => {
-              const days = daysSince(s.registrationDate);
+              const days = daysSince(s.submittedAt);
               return (
                 <div key={s.id} className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center">
                   {/* Seller info */}
@@ -67,7 +103,7 @@ export default function SellerVerificationPage() {
                     >
                       {s.logoInitials}
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="font-semibold text-neutral-900 dark:text-white">{s.companyName}</p>
                         <VerificationBadge status={s.verificationStatus} />
@@ -80,11 +116,12 @@ export default function SellerVerificationPage() {
                       <p className="text-sm text-neutral-600 dark:text-neutral-400">{s.sellerName}</p>
                       <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-400">
                         <span>{s.email}</span>
-                        <span>{s.phone}</span>
-                        <span>Category: {s.businessCategory}</span>
-                        <span>VAT: {s.vatNumber || "Not provided"}</span>
+                        <span>Legal: {s.legalName}</span>
+                        <span>Reg: {s.businessRegNumber}</span>
                       </div>
-                      <p className="mt-1 text-xs text-neutral-400">{s.businessAddress}</p>
+                      <p className="mt-1 text-xs text-neutral-400">
+                        Submitted: {s.submittedAt.toISOString().slice(0, 10)}
+                      </p>
                     </div>
                   </div>
 
@@ -125,34 +162,38 @@ export default function SellerVerificationPage() {
         <div className="border-b border-neutral-100 px-5 py-4 dark:border-neutral-800">
           <p className="text-sm font-semibold text-neutral-800 dark:text-white">Recently Processed</p>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-neutral-100 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800/50">
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Company</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Category</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Registered</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Status</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-50 dark:divide-neutral-800/50">
-              {recent.map((s) => (
-                <tr key={s.id}>
-                  <td className="px-5 py-3 font-medium text-neutral-800 dark:text-neutral-200">{s.companyName}</td>
-                  <td className="px-5 py-3 text-neutral-500">{s.businessCategory}</td>
-                  <td className="px-5 py-3 text-neutral-400">{s.registrationDate}</td>
-                  <td className="px-5 py-3"><VerificationBadge status={s.verificationStatus} /></td>
-                  <td className="px-5 py-3">
-                    <Link href={`/admin/sellers/${s.id}`} className="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400">
-                      View
-                    </Link>
-                  </td>
+        {recent.length === 0 ? (
+          <div className="py-10 text-center text-sm text-neutral-400">No processed sellers yet.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-neutral-100 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800/50">
+                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Store</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Contact</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Submitted</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Status</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-neutral-50 dark:divide-neutral-800/50">
+                {recent.map((s) => (
+                  <tr key={s.id}>
+                    <td className="px-5 py-3 font-medium text-neutral-800 dark:text-neutral-200">{s.companyName}</td>
+                    <td className="px-5 py-3 text-neutral-500">{s.email}</td>
+                    <td className="px-5 py-3 text-neutral-400">{s.submittedAt.toISOString().slice(0, 10)}</td>
+                    <td className="px-5 py-3"><VerificationBadge status={s.verificationStatus} /></td>
+                    <td className="px-5 py-3">
+                      <Link href={`/admin/sellers/${s.id}`} className="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400">
+                        View
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MOCK_SELLERS } from "@/lib/admin/mock-data";
+import { prisma } from "@/lib/prisma";
 import { VerificationBadge } from "@/components/admin/status-badge";
 import type { VerificationStatus } from "@/lib/admin/types";
 
@@ -7,6 +7,26 @@ function aed(fils: number) {
   return fils > 0
     ? `AED ${(fils / 100).toLocaleString("en-AE", { maximumFractionDigits: 0 })}`
     : "—";
+}
+
+const LOGO_COLORS = [
+  "bg-indigo-600", "bg-emerald-600", "bg-rose-500", "bg-teal-600",
+  "bg-violet-500", "bg-orange-500", "bg-pink-500", "bg-sky-600",
+];
+
+function getLogoColor(id: string) {
+  const idx = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) % LOGO_COLORS.length;
+  return LOGO_COLORS[idx];
+}
+
+function getInitials(name: string) {
+  return name.split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("") || "??";
+}
+
+function mapStatus(s: string): VerificationStatus {
+  if (s === "approved") return "verified";
+  if (s === "pending" || s === "rejected" || s === "suspended") return s as VerificationStatus;
+  return "pending";
 }
 
 const FILTERS: { label: string; value: VerificationStatus | "all" }[] = [
@@ -25,15 +45,37 @@ export default async function SellersPage({ searchParams }: Props) {
   const params = await searchParams;
   const filter = (params.status ?? "all") as VerificationStatus | "all";
 
-  const sellers =
-    filter === "all" ? MOCK_SELLERS : MOCK_SELLERS.filter((s) => s.verificationStatus === filter);
+  const dbSellers = await prisma.seller.findMany({
+    include: {
+      user: { select: { name: true, email: true } },
+      _count: { select: { products: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const mapped = dbSellers.map((s) => ({
+    id: s.id,
+    companyName: s.storeName,
+    sellerName: s.user.name,
+    email: s.user.email,
+    logoInitials: getInitials(s.storeName),
+    logoColor: getLogoColor(s.id),
+    registrationDate: (s.submittedAt ?? s.createdAt).toISOString().slice(0, 10),
+    verificationStatus: mapStatus(s.verificationStatus),
+    productCount: s._count.products,
+    totalRevenueFils: 0,
+    averageRating: 0,
+    commissionFils: 0,
+  }));
+
+  const sellers = filter === "all" ? mapped : mapped.filter((s) => s.verificationStatus === filter);
 
   const counts = {
-    all: MOCK_SELLERS.length,
-    verified: MOCK_SELLERS.filter((s) => s.verificationStatus === "verified").length,
-    pending: MOCK_SELLERS.filter((s) => s.verificationStatus === "pending").length,
-    suspended: MOCK_SELLERS.filter((s) => s.verificationStatus === "suspended").length,
-    rejected: MOCK_SELLERS.filter((s) => s.verificationStatus === "rejected").length,
+    all: mapped.length,
+    verified: mapped.filter((s) => s.verificationStatus === "verified").length,
+    pending: mapped.filter((s) => s.verificationStatus === "pending").length,
+    suspended: mapped.filter((s) => s.verificationStatus === "suspended").length,
+    rejected: mapped.filter((s) => s.verificationStatus === "rejected").length,
   };
 
   return (
@@ -72,11 +114,7 @@ export default async function SellersPage({ searchParams }: Props) {
               <tr className="border-b border-neutral-100 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-800/50">
                 <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Company</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Contact</th>
-                <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Category</th>
                 <th className="px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wide text-neutral-500">Products</th>
-                <th className="px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wide text-neutral-500">Revenue</th>
-                <th className="px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wide text-neutral-500">Rating</th>
-                <th className="px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wide text-neutral-500">Commission</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Status</th>
                 <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wide text-neutral-500">Actions</th>
               </tr>
@@ -100,20 +138,9 @@ export default async function SellersPage({ searchParams }: Props) {
                   <td className="px-5 py-4">
                     <p className="text-neutral-700 dark:text-neutral-300">{s.sellerName}</p>
                     <p className="text-xs text-neutral-400">{s.email}</p>
-                    <p className="text-xs text-neutral-400">{s.phone}</p>
-                  </td>
-                  <td className="px-5 py-4 text-neutral-500">{s.businessCategory}</td>
-                  <td className="px-5 py-4 text-right tabular-nums text-neutral-700 dark:text-neutral-300">
-                    {s.productCount > 0 ? `${s.productCount} (${s.activeProducts} active)` : "—"}
-                  </td>
-                  <td className="px-5 py-4 text-right font-semibold tabular-nums text-neutral-900 dark:text-white">
-                    {aed(s.totalRevenueFils)}
-                  </td>
-                  <td className="px-5 py-4 text-right text-neutral-600 dark:text-neutral-400">
-                    {s.averageRating > 0 ? `★ ${s.averageRating}` : "—"}
                   </td>
                   <td className="px-5 py-4 text-right tabular-nums text-neutral-700 dark:text-neutral-300">
-                    {aed(s.commissionFils)}
+                    {s.productCount > 0 ? s.productCount : "—"}
                   </td>
                   <td className="px-5 py-4">
                     <VerificationBadge status={s.verificationStatus} />

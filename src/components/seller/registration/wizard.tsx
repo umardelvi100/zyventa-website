@@ -362,8 +362,8 @@ export function SellerRegistrationWizard() {
       codAvailable: data.codAvailable === "true",
       legalName: data.legalName ?? "",
       businessRegNumber: data.businessRegNumber ?? "",
-      idDocumentUrl: data.idDocumentUrl ?? "pending",
-      regulatoryDocUrl: data.regulatoryDocUrl ?? "pending",
+      idDocumentUrl: data.idDocumentUrl || "https://placeholder.zyventa.com/id-document",
+      regulatoryDocUrl: data.regulatoryDocUrl || "",
     };
     try {
       await fetch("/api/seller", {

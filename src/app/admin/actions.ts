@@ -2,11 +2,13 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import {
   isValidAdminCredentials,
   ADMIN_TOKEN_COOKIE,
   ADMIN_TOKEN_VALUE,
 } from "@/lib/admin/auth";
+import { prisma } from "@/lib/prisma";
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 
@@ -32,7 +34,6 @@ export async function adminLoginAction(
     path: "/",
   });
 
-  // Return success — client will navigate to dashboard
   return { success: true };
 }
 
@@ -44,32 +45,43 @@ export async function adminLogoutAction(): Promise<never> {
   redirect("/admin/login");
 }
 
-// ─── Seller actions (mock) ────────────────────────────────────────────────────
-// TODO: Replace each with a real Prisma update + revalidatePath call.
+// ─── Seller actions ───────────────────────────────────────────────────────────
 
-export async function verifySellerAction(_id: string): Promise<void> {
-  // prisma.seller.update({ where: { id }, data: { verificationStatus: "approved" } })
+export async function verifySellerAction(id: string): Promise<void> {
+  await prisma.seller.update({
+    where: { id },
+    data: { verificationStatus: "approved", reviewedAt: new Date() },
+  });
+  revalidatePath("/admin/sellers");
+  revalidatePath("/admin/sellers/verification");
   redirect("/admin/sellers/verification");
 }
 
-export async function rejectSellerAction(_id: string): Promise<void> {
-  // prisma.seller.update({ where: { id }, data: { verificationStatus: "rejected" } })
+export async function rejectSellerAction(id: string): Promise<void> {
+  await prisma.seller.update({
+    where: { id },
+    data: { verificationStatus: "rejected", reviewedAt: new Date() },
+  });
+  revalidatePath("/admin/sellers");
+  revalidatePath("/admin/sellers/verification");
   redirect("/admin/sellers/verification");
 }
 
-export async function suspendSellerAction(_id: string): Promise<void> {
-  // prisma.seller.update({ where: { id }, data: { verificationStatus: "suspended" } })
+export async function suspendSellerAction(id: string): Promise<void> {
+  await prisma.seller.update({
+    where: { id },
+    data: { verificationStatus: "suspended", reviewedAt: new Date() },
+  });
+  revalidatePath("/admin/sellers");
   redirect("/admin/sellers");
 }
 
 // ─── Product actions (mock) ───────────────────────────────────────────────────
 
 export async function approveProductAction(_id: string): Promise<void> {
-  // prisma.product.update({ where: { id }, data: { approvalStatus: "approved", isPublished: true } })
   redirect("/admin/products/approval");
 }
 
 export async function rejectProductAction(_id: string, _reason: string): Promise<void> {
-  // prisma.product.update({ where: { id }, data: { approvalStatus: "rejected", rejectionReason: reason } })
   redirect("/admin/products/approval");
 }

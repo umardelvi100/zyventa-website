@@ -1,20 +1,35 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Star, Package, ShoppingCart, RotateCcw, DollarSign } from "lucide-react";
-import { MOCK_SELLERS } from "@/lib/admin/mock-data";
+import { prisma } from "@/lib/prisma";
 import { VerificationBadge } from "@/components/admin/status-badge";
-import { LineChart } from "@/components/admin/charts/line-chart";
-import { DonutChart } from "@/components/admin/charts/donut-chart";
+import type { VerificationStatus } from "@/lib/admin/types";
 import { verifySellerAction, rejectSellerAction, suspendSellerAction } from "@/app/admin/actions";
+
+const LOGO_COLORS = [
+  "bg-indigo-600", "bg-emerald-600", "bg-rose-500", "bg-teal-600",
+  "bg-violet-500", "bg-orange-500", "bg-pink-500", "bg-sky-600",
+];
+
+function getLogoColor(id: string) {
+  const idx = id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) % LOGO_COLORS.length;
+  return LOGO_COLORS[idx];
+}
+
+function getInitials(name: string) {
+  return name.split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("") || "??";
+}
+
+function mapStatus(s: string): VerificationStatus {
+  if (s === "approved") return "verified";
+  if (s === "pending" || s === "rejected" || s === "suspended") return s as VerificationStatus;
+  return "pending";
+}
 
 function aed(fils: number) {
   return fils > 0
     ? `AED ${(fils / 100).toLocaleString("en-AE", { maximumFractionDigits: 0 })}`
     : "—";
-}
-
-function fmtK(v: number) {
-  return v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v);
 }
 
 interface Metric {
@@ -31,8 +46,52 @@ interface Props {
 
 export default async function SellerDetailPage({ params }: Props) {
   const { id } = await params;
-  const seller = MOCK_SELLERS.find((s) => s.id === id);
-  if (!seller) notFound();
+
+  const dbSeller = await prisma.seller.findUnique({
+    where: { id },
+    include: {
+      user: { select: { name: true, email: true } },
+      _count: { select: { products: true } },
+    },
+  });
+  if (!dbSeller) notFound();
+
+  const verificationStatus = mapStatus(dbSeller.verificationStatus);
+
+  const seller = {
+    id: dbSeller.id,
+    companyName: dbSeller.storeName,
+    sellerName: dbSeller.user.name,
+    email: dbSeller.user.email,
+    phone: "—",
+    logoInitials: getInitials(dbSeller.storeName),
+    logoColor: getLogoColor(dbSeller.id),
+    registrationDate: (dbSeller.submittedAt ?? dbSeller.createdAt).toISOString().slice(0, 10),
+    verificationStatus,
+    businessCategory: "—",
+    businessAddress: "—",
+    vatNumber: "—",
+    lastActive: dbSeller.reviewedAt?.toISOString().slice(0, 10) ?? "—",
+    productCount: dbSeller._count.products,
+    activeProducts: 0,
+    totalSales: 0,
+    totalRevenueFils: 0,
+    averageRating: 0,
+    reviewCount: 0,
+    commissionFils: 0,
+    returnRate: 0,
+    highestSellingProduct: "—",
+    highestRatedProduct: "—",
+    lowestRatedProduct: "—",
+    bestCategory: "—",
+    legalName: dbSeller.legalName ?? "—",
+    businessRegNumber: dbSeller.businessRegNumber ?? "—",
+    idDocumentUrl: dbSeller.idDocumentUrl ?? null,
+    regulatoryDocUrl: dbSeller.regulatoryDocUrl ?? null,
+    monthlyRevenue: [] as { label: string; value: number }[],
+    monthlySales: [] as { label: string; value: number }[],
+    categoryDistribution: [] as { label: string; value: number; color: string }[],
+  };
 
   const metrics: Metric[] = [
     {
@@ -118,8 +177,10 @@ export default async function SellerDetailPage({ params }: Props) {
                 <VerificationBadge status={seller.verificationStatus} />
               </div>
               <p className="text-sm text-neutral-600 dark:text-neutral-400">{seller.sellerName}</p>
-              <p className="mt-0.5 text-sm text-neutral-400">{seller.email} · {seller.phone}</p>
-              <p className="mt-0.5 text-xs text-neutral-400">{seller.businessAddress}</p>
+              <p className="mt-0.5 text-sm text-neutral-400">{seller.email}</p>
+              {seller.legalName !== "—" && (
+                <p className="mt-0.5 text-xs text-neutral-400">Legal: {seller.legalName} · Reg: {seller.businessRegNumber}</p>
+              )}
             </div>
           </div>
 
@@ -158,13 +219,12 @@ export default async function SellerDetailPage({ params }: Props) {
         </div>
 
         {/* Info grid */}
-        <div className="mt-6 grid grid-cols-2 gap-4 border-t border-neutral-100 pt-6 text-sm dark:border-neutral-800 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="mt-6 grid grid-cols-2 gap-4 border-t border-neutral-100 pt-6 text-sm dark:border-neutral-800 sm:grid-cols-3 lg:grid-cols-4">
           {[
-            { label: "Business Category", value: seller.businessCategory },
-            { label: "VAT Number", value: seller.vatNumber || "Not provided" },
-            { label: "Seller Since", value: seller.registrationDate },
-            { label: "Last Active", value: seller.lastActive },
-            { label: "Best Performing", value: seller.bestCategory },
+            { label: "Submitted", value: seller.registrationDate },
+            { label: "Legal Name", value: seller.legalName },
+            { label: "Reg. Number", value: seller.businessRegNumber },
+            { label: "Last Reviewed", value: seller.lastActive },
           ].map((f) => (
             <div key={f.label}>
               <p className="text-xs text-neutral-400">{f.label}</p>
@@ -191,46 +251,30 @@ export default async function SellerDetailPage({ params }: Props) {
         ))}
       </div>
 
-      {/* Charts */}
-      {seller.monthlyRevenue.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <div className="col-span-1 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 lg:col-span-2">
-            <p className="mb-1 text-sm font-semibold text-neutral-800 dark:text-white">Monthly Revenue (AED)</p>
-            <p className="mb-4 text-xs text-neutral-400">Last 12 months</p>
-            <LineChart
-              data={seller.monthlyRevenue}
-              gradientId={`rev-${seller.id}`}
-              color="#6366f1"
-              formatY={(v) => `${(v / 1000).toFixed(0)}k`}
-            />
-          </div>
-
-          <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-            <p className="mb-4 text-sm font-semibold text-neutral-800 dark:text-white">Category Distribution</p>
-            <DonutChart data={seller.categoryDistribution} label={`${seller.productCount}`} />
+      {/* Document links */}
+      {(seller.idDocumentUrl || seller.regulatoryDocUrl) && (
+        <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+          <p className="mb-4 text-sm font-semibold text-neutral-800 dark:text-white">Submitted Documents</p>
+          <div className="flex flex-col gap-2 text-sm">
+            {seller.idDocumentUrl && (
+              <div className="flex items-center justify-between rounded-lg border border-neutral-100 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                <span className="text-neutral-600 dark:text-neutral-400">Government-issued ID</span>
+                <a href={seller.idDocumentUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400">
+                  View Document
+                </a>
+              </div>
+            )}
+            {seller.regulatoryDocUrl && (
+              <div className="flex items-center justify-between rounded-lg border border-neutral-100 bg-neutral-50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-800/40">
+                <span className="text-neutral-600 dark:text-neutral-400">Regulatory Document</span>
+                <a href={seller.regulatoryDocUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400">
+                  View Document
+                </a>
+              </div>
+            )}
           </div>
         </div>
       )}
-
-      {/* Top products info */}
-      <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <p className="mb-4 text-sm font-semibold text-neutral-800 dark:text-white">Product Highlights</p>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {[
-            { label: "🏆 Highest Selling", value: seller.highestSellingProduct },
-            { label: "⭐ Highest Rated", value: seller.highestRatedProduct },
-            { label: "⚠ Lowest Rated", value: seller.lowestRatedProduct },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="rounded-xl border border-neutral-100 bg-neutral-50 p-4 dark:border-neutral-800 dark:bg-neutral-800/40"
-            >
-              <p className="text-xs text-neutral-400">{item.label}</p>
-              <p className="mt-1 font-semibold text-neutral-800 dark:text-neutral-200">{item.value}</p>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
