@@ -17,6 +17,7 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  Globe,
 } from "lucide-react";
 import { adminLogoutAction } from "@/app/admin/actions";
 
@@ -98,6 +99,15 @@ const NAV: NavGroup[] = [
         href: "/admin/notifications",
         icon: <Bell className="h-4 w-4" />,
         badge: UNREAD_NOTIFICATIONS,
+      },
+    ],
+  },
+  {
+    items: [
+      {
+        label: "Homepage CMS",
+        href: "/admin/homepage",
+        icon: <Globe className="h-4 w-4" />,
       },
     ],
   },

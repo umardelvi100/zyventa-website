@@ -13,12 +13,16 @@ import { CustomerReviews } from "@/components/home/customer-reviews";
 import { ArticlesSection } from "@/components/home/articles-section";
 import { NewsletterSection } from "@/components/home/newsletter-section";
 import { PersonalizationShelf } from "@/components/home/personalization-shelf";
+import { AnnouncementBar } from "@/components/home/announcement-bar";
+import { PromoBannerSection } from "@/components/home/promo-banner-section";
+import { BrandShowcase } from "@/components/home/brand-showcase";
 import { computeRating } from "@/lib/ratings";
 import { getWishlistedIds } from "@/lib/wishlist";
 import { getCategoryPalette } from "@/lib/category-colors";
 import { getEffectiveCod } from "@/lib/cod";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { getDictionary } from "@/lib/i18n/translations";
+import { getHomepageConfig, getActivePromoBanner } from "@/lib/homepage/config";
 
 const CATEGORY_ICONS: Record<string, typeof Package> = {
   Medicines: Pill,
@@ -37,7 +41,9 @@ export default async function Home() {
   const userId = session?.user?.id;
   const dict = getDictionary(await getLocale());
 
-  const [allProducts, categories, wishlistedIds, sellerCount] = await Promise.all([
+  const [cfg, activeBanner, allProducts, categories, wishlistedIds, sellerCount] = await Promise.all([
+    getHomepageConfig(),
+    getActivePromoBanner(),
     prisma.product.findMany({
       orderBy: { createdAt: "asc" },
       include: {
@@ -104,13 +110,38 @@ export default async function Home() {
     0,
   );
 
+  const heroConfig = {
+    title: cfg.heroTitle,
+    subtitle: cfg.heroSubtitle,
+    cta1Text: cfg.heroCta1Text,
+    cta1Link: cfg.heroCta1Link,
+    cta2Text: cfg.heroCta2Text,
+    cta2Link: cfg.heroCta2Link,
+    promoLabel: cfg.heroPromoLabel,
+    promoTag: cfg.heroPromoTag,
+    promoLink: cfg.heroPromoLink,
+  };
+
   return (
     <>
+      {/* ── Announcement Bar ──────────────────────────────────────────────── */}
+      {cfg.announcementText && (
+        <AnnouncementBar
+          text={cfg.announcementText}
+          link={cfg.announcementLink}
+          color={cfg.announcementColor}
+        />
+      )}
+
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <Hero
         leftProducts={leftProducts.length >= 2 ? leftProducts : fallback}
         rightProducts={rightProducts.length >= 2 ? rightProducts : fallback}
+        config={heroConfig}
       />
+
+      {/* ── Promo Banner ──────────────────────────────────────────────────── */}
+      {activeBanner && <PromoBannerSection banner={activeBanner} />}
 
       {/* ── Trust Strip ───────────────────────────────────────────────────── */}
       <TrustStrip />
@@ -220,7 +251,7 @@ export default async function Home() {
       </section>
 
       {/* ── Best Sellers ──────────────────────────────────────────────────── */}
-      {bestSellers.length > 0 && (
+      {cfg.showBestSellers && bestSellers.length > 0 && (
         <PersonalizationShelf
           title="Best Sellers"
           subtitle="Our most loved products, trusted by thousands"
@@ -232,6 +263,9 @@ export default async function Home() {
 
       {/* ── Why Zyventa ───────────────────────────────────────────────────── */}
       <WhyZyventa />
+
+      {/* ── Brand Showcase ────────────────────────────────────────────────── */}
+      {cfg.showBrands && <BrandShowcase />}
 
       {/* ── Category product rows ─────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 pb-16 pt-14 sm:px-6 lg:px-8">
@@ -268,7 +302,7 @@ export default async function Home() {
       </section>
 
       {/* ── New Arrivals ──────────────────────────────────────────────────── */}
-      {newArrivals.length > 0 && (
+      {cfg.showNewArrivals && newArrivals.length > 0 && (
         <PersonalizationShelf
           title="New Arrivals"
           subtitle="The latest additions to our marketplace"
@@ -279,13 +313,13 @@ export default async function Home() {
       )}
 
       {/* ── Customer Reviews ──────────────────────────────────────────────── */}
-      <CustomerReviews />
+      {cfg.showTestimonials && <CustomerReviews />}
 
       {/* ── Health Journal / Articles ─────────────────────────────────────── */}
-      <ArticlesSection />
+      {cfg.showArticles && <ArticlesSection />}
 
       {/* ── Newsletter ────────────────────────────────────────────────────── */}
-      <NewsletterSection />
+      {cfg.showNewsletter && <NewsletterSection />}
 
       {/* ── Seller CTA ────────────────────────────────────────────────────── */}
       <SellerCtaBanner />

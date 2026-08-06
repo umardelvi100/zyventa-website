@@ -14,21 +14,50 @@ export type HeroProduct = {
   image: string;
 };
 
-// Campaign slot: set to null to hide, or populate for seasonal campaigns.
-// Example: { label: "Ramadan Offers", tag: "Limited Time", href: "/products?search=ramadan" }
-const ACTIVE_CAMPAIGN: { label: string; tag: string; href: string } | null = null;
+export type HeroConfig = {
+  title: string;
+  subtitle: string;
+  cta1Text: string;
+  cta1Link: string;
+  cta2Text: string;
+  cta2Link: string;
+  promoLabel: string | null;
+  promoTag: string | null;
+  promoLink: string | null;
+};
 
 const QUICK_SEARCHES = ["Scar gel", "Vitamin C", "Sunscreen SPF 50", "Collagen"];
+
+const DEFAULT_CONFIG: HeroConfig = {
+  title: "Your Health & Beauty Destination",
+  subtitle: "Verified sellers. Genuine products. Fast delivery across all 7 Emirates.",
+  cta1Text: "Shop Now",
+  cta1Link: "/products",
+  cta2Text: "Browse Medicines",
+  cta2Link: "/products?category=Medicines",
+  promoLabel: null,
+  promoTag: null,
+  promoLink: null,
+};
 
 export function Hero({
   leftProducts,
   rightProducts,
+  config,
 }: {
   leftProducts: HeroProduct[];
   rightProducts: HeroProduct[];
+  config?: HeroConfig;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
+
+  const cfg = config ?? DEFAULT_CONFIG;
+  const isDefaultTitle = cfg.title === DEFAULT_CONFIG.title;
+  const campaign =
+    cfg.promoLabel
+      ? { label: cfg.promoLabel, tag: cfg.promoTag ?? "", href: cfg.promoLink ?? "/products" }
+      : null;
 
   const leftHeights = ["h-52 w-36", "h-64 w-44", "h-44 w-36"];
   const rightHeights = ["h-44 w-36", "h-64 w-44", "h-52 w-36"];
@@ -61,8 +90,8 @@ export function Hero({
         {/* Center panel */}
         <div className="flex flex-col items-center justify-center bg-white px-8 py-20 text-center lg:py-24">
 
-          {/* Campaign pill — shown only when ACTIVE_CAMPAIGN is set */}
-          {ACTIVE_CAMPAIGN && (
+          {/* Campaign pill */}
+          {campaign && (
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -70,11 +99,11 @@ export function Hero({
               className="mb-5"
             >
               <Link
-                href={ACTIVE_CAMPAIGN.href}
+                href={campaign.href}
                 className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-orange-500 px-4 py-1.5 text-xs font-bold text-white shadow-md transition hover:opacity-90"
               >
                 <Zap className="h-3.5 w-3.5" />
-                {ACTIVE_CAMPAIGN.tag}: {ACTIVE_CAMPAIGN.label}
+                {campaign.tag}: {campaign.label}
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </motion.div>
@@ -84,7 +113,7 @@ export function Hero({
           <motion.p
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: ACTIVE_CAMPAIGN ? 0.1 : 0 }}
+            transition={{ duration: 0.4, delay: campaign ? 0.1 : 0 }}
             className="mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-600"
           >
             Health &amp; Beauty Marketplace
@@ -97,14 +126,20 @@ export function Hero({
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-4xl font-black leading-[1.08] tracking-tight xl:text-5xl"
           >
-            Your{" "}
-            <span className="text-indigo-600">Health</span>
-            {" "}&amp;{" "}
-            <span className="bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent">
-              Beauty
-            </span>
-            <br />
-            Destination
+            {isDefaultTitle ? (
+              <>
+                Your{" "}
+                <span className="text-indigo-600">Health</span>
+                {" "}&amp;{" "}
+                <span className="bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent">
+                  Beauty
+                </span>
+                <br />
+                Destination
+              </>
+            ) : (
+              cfg.title
+            )}
           </motion.h1>
 
           <motion.p
@@ -113,7 +148,7 @@ export function Hero({
             transition={{ duration: 0.45, delay: 0.2 }}
             className="mt-4 max-w-xs text-sm leading-relaxed text-neutral-500"
           >
-            Verified sellers. Genuine products. Fast delivery across all 7 Emirates.
+            {cfg.subtitle}
           </motion.p>
 
           {/* Search bar */}
@@ -163,17 +198,19 @@ export function Hero({
             className="mt-7 flex flex-col gap-3 sm:flex-row"
           >
             <Link
-              href="/products"
+              href={cfg.cta1Link}
               className="flex items-center justify-center gap-2 rounded-full bg-indigo-600 px-7 py-3 font-semibold text-white shadow-lg shadow-indigo-500/25 transition hover:bg-indigo-700 hover:shadow-indigo-500/40"
             >
-              Shop Now <ArrowRight className="h-4 w-4" />
+              {cfg.cta1Text} <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link
-              href="/products?category=Medicines"
-              className="flex items-center justify-center gap-2 rounded-full border border-black/10 bg-neutral-50 px-7 py-3 font-semibold text-neutral-700 transition hover:bg-neutral-100"
-            >
-              Browse Medicines
-            </Link>
+            {cfg.cta2Text && (
+              <Link
+                href={cfg.cta2Link}
+                className="flex items-center justify-center gap-2 rounded-full border border-black/10 bg-neutral-50 px-7 py-3 font-semibold text-neutral-700 transition hover:bg-neutral-100"
+              >
+                {cfg.cta2Text}
+              </Link>
+            )}
           </motion.div>
         </div>
 

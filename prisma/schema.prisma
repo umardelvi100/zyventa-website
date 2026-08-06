@@ -169,3 +169,42 @@ model WarrantyClaim {
   status      String    @default("submitted")
   createdAt   DateTime  @default(now())
 }
+
+model HomepageConfig {
+  id                String   @id @default("singleton")
+  heroTitle         String   @default("Your Health & Beauty Destination")
+  heroSubtitle      String   @default("Verified sellers. Genuine products. Fast delivery across all 7 Emirates.")
+  heroCta1Text      String   @default("Shop Now")
+  heroCta1Link      String   @default("/products")
+  heroCta2Text      String   @default("Browse Medicines")
+  heroCta2Link      String   @default("/products?category=Medicines")
+  heroPromoLabel    String?
+  heroPromoTag      String?
+  heroPromoLink     String?
+  announcementText  String?
+  announcementLink  String?
+  announcementColor String   @default("indigo")
+  showBestSellers   Boolean  @default(true)
+  showNewArrivals   Boolean  @default(true)
+  showBrands        Boolean  @default(true)
+  showTestimonials  Boolean  @default(true)
+  showArticles      Boolean  @default(true)
+  showNewsletter    Boolean  @default(true)
+  updatedAt         DateTime @updatedAt
+}
+
+model PromoBanner {
+  id        String   @id @default(cuid())
+  name      String
+  tag       String?
+  title     String
+  subtitle  String?
+  ctaText   String   @default("Shop Now")
+  ctaLink   String
+  bgFrom    String   @default("#6366f1")
+  bgTo      String   @default("#f97316")
+  isActive  Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
