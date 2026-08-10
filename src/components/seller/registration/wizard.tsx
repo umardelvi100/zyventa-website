@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import {
   Store, Building2, ShieldCheck, Landmark, Truck, FileCheck, ClipboardList,
-  ChevronRight, ChevronLeft, Check, Upload
+  ChevronRight, ChevronLeft, Check, Upload,
 } from "lucide-react";
 
 const STEPS = [
@@ -345,6 +347,7 @@ function Step7({ data }: { data: Record<string, string> }) {
 // ── Main Wizard ──────────────────────────────────────────────────────────────
 
 export function SellerRegistrationWizard() {
+  const { update } = useSession();
   const [step, setStep] = useState(1);
   const [data, setData] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -372,6 +375,8 @@ export function SellerRegistrationWizard() {
         body: JSON.stringify(payload),
       });
       setSubmitted(true);
+      // Refresh JWT so navbar immediately shows "Seller Dashboard"
+      await update();
     } catch {
       /* handle error */
     } finally {
@@ -387,8 +392,17 @@ export function SellerRegistrationWizard() {
         </div>
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Application Submitted!</h2>
-          <p className="mt-2 text-slate-500 max-w-sm">Our team will review your application and get back to you within 2–3 business days.</p>
+          <p className="mt-2 text-slate-500 max-w-sm">
+            Our team will review your application and get back to you within 2–3 business days.
+            Once approved, you can start listing products.
+          </p>
         </div>
+        <Link
+          href="/seller/dashboard"
+          className="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-700"
+        >
+          Go to Seller Dashboard
+        </Link>
       </div>
     );
   }

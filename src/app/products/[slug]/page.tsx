@@ -17,6 +17,27 @@ import { ProductCard } from "@/components/product-card";
 import { WishlistButton } from "@/components/wishlist-button";
 import { ReviewList } from "@/components/reviews/review-list";
 import { ReviewForm } from "@/components/reviews/review-form";
+import { ProductGallery, type GalleryPhoto } from "@/components/product-gallery";
+
+// AI-generated gallery photos for featured products
+const PRODUCT_GALLERIES: Record<string, GalleryPhoto[]> = {
+  "homehaven-spf50-sunscreen": [
+    { src: "https://picsum.photos/seed/spf50-front/800/800",   label: "Front view" },
+    { src: "https://picsum.photos/seed/spf50-texture/800/800", label: "Texture & formula" },
+    { src: "https://picsum.photos/seed/spf50-apply1/800/800",  label: "Applying to face" },
+    { src: "https://picsum.photos/seed/spf50-blend/800/800",   label: "Blending in" },
+    { src: "https://picsum.photos/seed/spf50-outdoor/800/800", label: "Outdoor protection" },
+    { src: "https://picsum.photos/seed/spf50-routine/800/800", label: "Morning routine" },
+  ],
+  "gulfmed-collagen-peptides": [
+    { src: "https://picsum.photos/seed/collagen-front/800/800",  label: "Product front" },
+    { src: "https://picsum.photos/seed/collagen-scoop/800/800",  label: "Powder close-up" },
+    { src: "https://picsum.photos/seed/collagen-mix/800/800",    label: "Mixing into drink" },
+    { src: "https://picsum.photos/seed/collagen-drink/800/800",  label: "Ready to drink" },
+    { src: "https://picsum.photos/seed/collagen-active/800/800", label: "Active lifestyle" },
+    { src: "https://picsum.photos/seed/collagen-glow/800/800",   label: "Visible results" },
+  ],
+};
 
 type KeyFeature = { icon: typeof FlaskConical; label: string; desc: string };
 
@@ -70,6 +91,7 @@ export default async function ProductDetailPage({
   const { finalPrice, originalPrice } = getEffectivePrice(product);
   const isWishlisted = wishlistedIds.has(product.id);
   const features = CATEGORY_FEATURES[product.category] ?? CATEGORY_FEATURES["Consumables"];
+  const gallery = PRODUCT_GALLERIES[product.slug] ?? null;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -83,28 +105,42 @@ export default async function ProductDetailPage({
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-2">
-        {/* Product image */}
-        <div className="relative aspect-square overflow-hidden rounded-3xl bg-neutral-100 dark:bg-neutral-800">
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            className="object-cover"
-            priority
-          />
-          {promoActive && (
-            <span className="absolute left-4 top-4 rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white shadow">
-              {product.promotionLabel || `${product.discountPercent}% OFF`}
-            </span>
-          )}
-          <div className="absolute right-4 top-4">
-            <WishlistButton productId={product.id} initialWishlisted={isWishlisted} />
+        {/* Product image / gallery */}
+        {gallery ? (
+          <div className="relative">
+            {promoActive && (
+              <span className="absolute left-4 top-4 z-10 rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white shadow">
+                {product.promotionLabel || `${product.discountPercent}% OFF`}
+              </span>
+            )}
+            <div className="absolute right-4 top-4 z-10">
+              <WishlistButton productId={product.id} initialWishlisted={isWishlisted} />
+            </div>
+            <ProductGallery photos={gallery} productName={product.name} />
           </div>
-          <span className="absolute bottom-4 left-4 flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow backdrop-blur dark:bg-neutral-900/80 dark:text-neutral-200">
-            <ZoomIn className="h-3.5 w-3.5" /> Zoom in
-          </span>
-        </div>
+        ) : (
+          <div className="relative aspect-square overflow-hidden rounded-3xl bg-neutral-100 dark:bg-neutral-800">
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover"
+              priority
+            />
+            {promoActive && (
+              <span className="absolute left-4 top-4 rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white shadow">
+                {product.promotionLabel || `${product.discountPercent}% OFF`}
+              </span>
+            )}
+            <div className="absolute right-4 top-4">
+              <WishlistButton productId={product.id} initialWishlisted={isWishlisted} />
+            </div>
+            <span className="absolute bottom-4 left-4 flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow backdrop-blur dark:bg-neutral-900/80 dark:text-neutral-200">
+              <ZoomIn className="h-3.5 w-3.5" /> Zoom in
+            </span>
+          </div>
+        )}
 
         {/* Product info */}
         <div className="flex flex-col">

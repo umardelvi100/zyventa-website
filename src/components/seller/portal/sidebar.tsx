@@ -35,9 +35,12 @@ const NAV_ITEMS = [
 
 interface SidebarProps {
   onClose?: () => void;
+  storeName?: string;
+  initials?: string;
+  isVerified?: boolean;
 }
 
-export function SellerSidebar({ onClose }: SidebarProps) {
+export function SellerSidebar({ onClose, storeName = "My Store", initials = "S", isVerified = false }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -60,12 +63,16 @@ export function SellerSidebar({ onClose }: SidebarProps) {
       {/* Store info */}
       <div className="border-b border-slate-100 px-5 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-orange-500 text-sm font-bold text-white">
-            ZM
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-orange-500 text-sm font-bold text-white">
+            {initials}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-slate-900">Zyventa Medical</p>
-            <p className="text-xs text-emerald-600 font-medium">● Verified Seller</p>
+            <p className="truncate text-sm font-semibold text-slate-900">{storeName}</p>
+            {isVerified ? (
+              <p className="text-xs text-emerald-600 font-medium">● Verified Seller</p>
+            ) : (
+              <p className="text-xs text-amber-600 font-medium">● Pending Verification</p>
+            )}
           </div>
         </div>
       </div>
