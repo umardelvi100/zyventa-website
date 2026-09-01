@@ -30,14 +30,14 @@ export function NewsletterSection() {
 
         <div className="relative">
           {/* Icon */}
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-orange-500 text-white shadow-lg">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-accent text-accent-foreground">
             <Sparkles className="h-7 w-7" />
           </div>
 
-          <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-400">
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-300">
             Stay in the Know
           </p>
-          <h2 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
+          <h2 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Health & Beauty, delivered to your inbox
           </h2>
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-neutral-400">
@@ -64,7 +64,7 @@ export function NewsletterSection() {
               />
               <button
                 type="submit"
-                className="flex shrink-0 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:opacity-90"
+                className="flex shrink-0 items-center justify-center gap-2 rounded-md bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition hover:opacity-90"
               >
                 Subscribe <ArrowRight className="h-4 w-4" />
               </button>

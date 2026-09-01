@@ -14,7 +14,7 @@ import { ArticlesSection } from "@/components/home/articles-section";
 import { NewsletterSection } from "@/components/home/newsletter-section";
 import { PersonalizationShelf } from "@/components/home/personalization-shelf";
 import { AnnouncementBar } from "@/components/home/announcement-bar";
-import { PromoBannerSection } from "@/components/home/promo-banner-section";
+import { HeroSlideshow, type Slide } from "@/components/home/hero-slideshow";
 import { BrandShowcase } from "@/components/home/brand-showcase";
 import { computeRating } from "@/lib/ratings";
 import { getWishlistedIds } from "@/lib/wishlist";
@@ -22,7 +22,43 @@ import { getCategoryPalette } from "@/lib/category-colors";
 import { getEffectiveCod } from "@/lib/cod";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { getDictionary } from "@/lib/i18n/translations";
-import { getHomepageConfig, getActivePromoBanner } from "@/lib/homepage/config";
+import { getHomepageConfig, getActivePromoBanners } from "@/lib/homepage/config";
+
+const DEFAULT_SLIDES: Slide[] = [
+  {
+    id: "default-medicines",
+    tag: "Trusted Pharmacy",
+    title: "Genuine Medicines, Delivered Fast",
+    subtitle: "OTC & prescription essentials from verified pharmacies across the UAE.",
+    ctaText: "Shop Medicines",
+    ctaLink: "/products?category=Medicines",
+    image: "https://picsum.photos/seed/zyventa-slide-medicines/1600/900",
+    bgFrom: "#4f46e5",
+    bgTo: "#0ea5e9",
+  },
+  {
+    id: "default-cosmetics",
+    tag: "New In",
+    title: "Beauty & Skincare You Can Trust",
+    subtitle: "Curated cosmetics from authorised distributors — 100% authentic, every time.",
+    ctaText: "Shop Cosmetics",
+    ctaLink: "/products?category=Cosmetics",
+    image: "https://picsum.photos/seed/zyventa-slide-cosmetics/1600/900",
+    bgFrom: "#a21caf",
+    bgTo: "#f97316",
+  },
+  {
+    id: "default-consumables",
+    tag: "Everyday Essentials",
+    title: "Wellness Must-Haves, Same-Day Delivery",
+    subtitle: "From first aid to daily care — stocked, verified, and delivered fast.",
+    ctaText: "Shop Consumables",
+    ctaLink: "/products?category=Consumables",
+    image: "https://picsum.photos/seed/zyventa-slide-consumables/1600/900",
+    bgFrom: "#0f766e",
+    bgTo: "#059669",
+  },
+];
 
 const CATEGORY_ICONS: Record<string, typeof Package> = {
   Medicines: Pill,
@@ -41,9 +77,9 @@ export default async function Home() {
   const userId = session?.user?.id;
   const dict = getDictionary(await getLocale());
 
-  const [cfg, activeBanner, allProducts, categories, wishlistedIds, sellerCount] = await Promise.all([
+  const [cfg, activeBanners, allProducts, categories, wishlistedIds, sellerCount] = await Promise.all([
     getHomepageConfig(),
-    getActivePromoBanner(),
+    getActivePromoBanners(),
     prisma.product.findMany({
       orderBy: { createdAt: "asc" },
       include: {
@@ -122,6 +158,20 @@ export default async function Home() {
     promoLink: cfg.heroPromoLink,
   };
 
+  const slides: Slide[] =
+    activeBanners.length > 0
+      ? activeBanners.map((b) => ({
+          id: b.id,
+          tag: b.tag,
+          title: b.title,
+          subtitle: b.subtitle,
+          ctaText: b.ctaText,
+          ctaLink: b.ctaLink,
+          bgFrom: b.bgFrom,
+          bgTo: b.bgTo,
+        }))
+      : DEFAULT_SLIDES;
+
   return (
     <>
       {/* ── Announcement Bar ──────────────────────────────────────────────── */}
@@ -133,15 +183,15 @@ export default async function Home() {
         />
       )}
 
+      {/* ── Hero Slideshow ────────────────────────────────────────────────── */}
+      <HeroSlideshow slides={slides} />
+
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <Hero
         leftProducts={leftProducts.length >= 2 ? leftProducts : fallback}
         rightProducts={rightProducts.length >= 2 ? rightProducts : fallback}
         config={heroConfig}
       />
-
-      {/* ── Promo Banner ──────────────────────────────────────────────────── */}
-      {activeBanner && <PromoBannerSection banner={activeBanner} />}
 
       {/* ── Trust Strip ───────────────────────────────────────────────────── */}
       <TrustStrip />
@@ -197,7 +247,7 @@ export default async function Home() {
       <section className="mx-auto max-w-7xl px-4 pb-4 pt-4 sm:px-6 lg:px-8">
         <div className="mb-7 flex items-end justify-between">
           <div>
-            <h2 className="text-2xl font-black tracking-tight sm:text-3xl">{dict.home.shopByCategory}</h2>
+            <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">{dict.home.shopByCategory}</h2>
             <p className="mt-1 text-sm text-neutral-500">Find exactly what you need</p>
           </div>
           <Link

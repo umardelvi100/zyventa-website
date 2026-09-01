@@ -55,13 +55,13 @@ export async function getHomepageConfig(): Promise<HomepageConfigData> {
   }
 }
 
-export async function getActivePromoBanner() {
+export async function getActivePromoBanners() {
   try {
-    return await prisma.promoBanner.findFirst({
+    return await prisma.promoBanner.findMany({
       where: { isActive: true },
       orderBy: { sortOrder: "asc" },
     });
   } catch {
-    return null;
+    return [];
   }
 }

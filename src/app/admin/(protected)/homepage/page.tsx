@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Globe, Zap, Eye, LayoutGrid, Megaphone } from "lucide-react";
-import { getHomepageConfig, getActivePromoBanner } from "@/lib/homepage/config";
+import { getHomepageConfig, getActivePromoBanners } from "@/lib/homepage/config";
 import { prisma } from "@/lib/prisma";
 
 export default async function HomepageCMSPage() {
-  const [config, activeBanner, bannerCount] = await Promise.all([
+  const [config, activeBanners, bannerCount] = await Promise.all([
     getHomepageConfig(),
-    getActivePromoBanner(),
+    getActivePromoBanners(),
     prisma.promoBanner.count(),
   ]);
 
@@ -42,10 +42,10 @@ export default async function HomepageCMSPage() {
       <div className="grid grid-cols-3 gap-4">
         {[
           {
-            label: "Active Banner",
-            value: activeBanner ? activeBanner.name : "None",
+            label: "Slideshow Banners",
+            value: activeBanners.length > 0 ? `${activeBanners.length} active` : "None",
             sub: `${bannerCount} total`,
-            color: activeBanner ? "text-emerald-600" : "text-neutral-400",
+            color: activeBanners.length > 0 ? "text-emerald-600" : "text-neutral-400",
           },
           {
             label: "Hero Title",

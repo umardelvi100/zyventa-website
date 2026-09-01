@@ -72,7 +72,7 @@ export function Hero({
       <div className="mx-auto grid max-w-7xl grid-cols-1 lg:grid-cols-[1fr_420px_1fr]">
 
         {/* Left panel — Medicines */}
-        <div className="hidden items-end justify-center gap-3 bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 px-6 pb-0 pt-12 lg:flex">
+        <div className="hidden items-end justify-center gap-3 border-r border-black/5 bg-neutral-50 px-6 pb-0 pt-12 lg:flex">
           {leftProducts.slice(0, 3).map((p, i) => (
             <motion.div
               key={p.id}
@@ -100,7 +100,7 @@ export function Hero({
             >
               <Link
                 href={campaign.href}
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-orange-500 px-4 py-1.5 text-xs font-bold text-white shadow-md transition hover:opacity-90"
+                className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-1.5 text-xs font-bold text-accent-foreground transition hover:opacity-90"
               >
                 <Zap className="h-3.5 w-3.5" />
                 {campaign.tag}: {campaign.label}
@@ -114,7 +114,7 @@ export function Hero({
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: campaign ? 0.1 : 0 }}
-            className="mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-indigo-600"
+            className="mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-accent"
           >
             Health &amp; Beauty Marketplace
           </motion.p>
@@ -124,16 +124,12 @@ export function Hero({
             initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl font-black leading-[1.08] tracking-tight xl:text-5xl"
+            className="font-display text-4xl font-bold leading-[1.05] tracking-tight text-neutral-950 xl:text-5xl"
           >
             {isDefaultTitle ? (
               <>
-                Your{" "}
-                <span className="text-indigo-600">Health</span>
-                {" "}&amp;{" "}
-                <span className="bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent">
-                  Beauty
-                </span>
+                Your Health &amp;{" "}
+                <span className="text-accent">Beauty</span>
                 <br />
                 Destination
               </>
@@ -170,7 +166,7 @@ export function Hero({
               />
               <button
                 type="submit"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-700"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground transition hover:opacity-90"
               >
                 Search
               </button>
@@ -199,14 +195,14 @@ export function Hero({
           >
             <Link
               href={cfg.cta1Link}
-              className="flex items-center justify-center gap-2 rounded-full bg-indigo-600 px-7 py-3 font-semibold text-white shadow-lg shadow-indigo-500/25 transition hover:bg-indigo-700 hover:shadow-indigo-500/40"
+              className="flex items-center justify-center gap-2 rounded-md bg-accent px-7 py-3 font-semibold text-accent-foreground transition hover:opacity-90"
             >
               {cfg.cta1Text} <ArrowRight className="h-4 w-4" />
             </Link>
             {cfg.cta2Text && (
               <Link
                 href={cfg.cta2Link}
-                className="flex items-center justify-center gap-2 rounded-full border border-black/10 bg-neutral-50 px-7 py-3 font-semibold text-neutral-700 transition hover:bg-neutral-100"
+                className="flex items-center justify-center gap-2 rounded-md border border-black/10 px-7 py-3 font-semibold text-neutral-700 transition hover:bg-neutral-50"
               >
                 {cfg.cta2Text}
               </Link>
@@ -215,7 +211,7 @@ export function Hero({
         </div>
 
         {/* Right panel — Cosmetics */}
-        <div className="hidden items-end justify-center gap-3 bg-gradient-to-bl from-purple-50 via-fuchsia-50 to-pink-50 px-6 pb-0 pt-12 lg:flex">
+        <div className="hidden items-end justify-center gap-3 border-l border-black/5 bg-neutral-50 px-6 pb-0 pt-12 lg:flex">
           {rightProducts.slice(0, 3).map((p, i) => (
             <motion.div
               key={p.id}

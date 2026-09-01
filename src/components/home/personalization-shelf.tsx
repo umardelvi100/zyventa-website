@@ -33,7 +33,7 @@ export function PersonalizationShelf({
               {tag}
             </span>
           </div>
-          <h2 className="text-2xl font-black tracking-tight">{title}</h2>
+          <h2 className="font-display text-2xl font-bold tracking-tight">{title}</h2>
           {subtitle && <p className="mt-1 text-sm text-neutral-500">{subtitle}</p>}
         </div>
         <Link

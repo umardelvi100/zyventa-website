@@ -119,8 +119,8 @@ export default async function BannersPage() {
       <div className="rounded-2xl border border-neutral-100 bg-neutral-50 p-4 text-sm text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900/50">
         <p className="font-medium text-neutral-700 dark:text-neutral-300">How it works</p>
         <p className="mt-1">
-          Only one active banner shows on the homepage at a time (lowest sort order). Activate a
-          banner to display it; deactivate to hide without deleting.
+          All active banners appear together as slides in the homepage slideshow, in sort order.
+          Activate a banner to include it; deactivate to remove it without deleting.
         </p>
       </div>
     </div>
