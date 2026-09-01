@@ -13,9 +13,8 @@ export default async function HomepageCMSPage() {
   const sections = [
     { key: "showBestSellers" as const, label: "Best Sellers" },
     { key: "showNewArrivals" as const, label: "New Arrivals" },
-    { key: "showBrands" as const, label: "Brand Showcase" },
+    { key: "showBrands" as const, label: "Brand Strip (in Why Zyventa)" },
     { key: "showTestimonials" as const, label: "Customer Reviews" },
-    { key: "showArticles" as const, label: "Health Journal" },
     { key: "showNewsletter" as const, label: "Newsletter" },
   ];
 

@@ -245,22 +245,16 @@ export default async function HeroEditorPage() {
             description="Most recently added products"
           />
           <Toggle
-            label="Brand Showcase"
+            label="Brand Strip"
             name="showBrands"
             defaultChecked={config.showBrands}
-            description="Verified seller brands strip"
+            description="Verified seller brands, shown in the Why Zyventa section"
           />
           <Toggle
             label="Customer Reviews"
             name="showTestimonials"
             defaultChecked={config.showTestimonials}
             description="Curated customer testimonials"
-          />
-          <Toggle
-            label="Health Journal"
-            name="showArticles"
-            defaultChecked={config.showArticles}
-            description="Editorial articles section"
           />
           <Toggle
             label="Newsletter"
